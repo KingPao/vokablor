@@ -1,0 +1,14 @@
+node_modules/
+**/node_modules/
+**/dist/
+**/build/
+**/coverage/
+**/.vite/
+*.log
+.env
+.env.*
+!.env.example
+docker/
+specs/
+.specify/
+.claude/

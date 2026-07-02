@@ -1,0 +1,10 @@
+{
+	# Local dev: self-signed internal cert. Swap to a real domain + automatic
+	# Let's Encrypt (remove `tls internal`) for production deployment.
+	local_certs
+}
+
+localhost, vokablor.local {
+	tls internal
+	reverse_proxy app:3000
+}
