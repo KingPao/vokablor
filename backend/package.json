@@ -9,6 +9,7 @@
     "start": "node dist/api/app.js",
     "migrate": "tsx src/migrations/run.ts up",
     "migrate:down": "tsx src/migrations/run.ts down",
+    "migrate:prod": "node dist/migrations/run.js up",
     "seed:rss": "tsx src/scripts/seed-rss-sources.ts",
     "test": "vitest run",
     "test:watch": "vitest",

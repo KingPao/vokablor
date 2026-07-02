@@ -1,9 +1,12 @@
 import 'dotenv/config';
 import { serve } from '@hono/node-server';
+import { serveStatic } from '@hono/node-server/serve-static';
 import { Hono } from 'hono';
 import type { AppEnv } from '../middleware/session.js';
 import { attachSession } from '../middleware/session.js';
 import { closeDb } from '../db/client.js';
+import { apiError } from './errors.js';
+import { AIProviderError } from '../services/ai-providers/index.js';
 import { authRoutes } from './routes/auth.js';
 import { vocabularyRoutes } from './routes/vocabulary.js';
 import { trainingRoutes } from './routes/training.js';
@@ -29,6 +32,30 @@ app.route('/api', aiProviderRoutes);
 app.route('/api', conversationRoutes);
 app.route('/api', progressRoutes);
 app.route('/api', syncRoutes);
+
+/**
+ * Safety net so every error response honors the `{error: {code, message}}` contract
+ * (contracts/api.md) — without this, an uncaught throw (e.g. the configured AIProvider
+ * rejecting because no API key/quota is set up) falls through to Hono's default handler,
+ * which returns a plain-text "Internal Server Error" that breaks the frontend's JSON parsing.
+ */
+app.onError((err, c) => {
+  console.error(err);
+  if (err instanceof AIProviderError) {
+    return apiError(c, 502, 'AI_PROVIDER_ERROR', 'The configured AI provider is unavailable right now.');
+  }
+  return apiError(c, 500, 'INTERNAL_ERROR', 'Something went wrong. Please try again.');
+});
+
+/* v8 ignore start -- static asset serving for the production image (docker/Dockerfile copies
+ * frontend/dist next to this process's WORKDIR); local dev serves the frontend via Vite
+ * instead (root package.json's `dev` script). Skipped in tests: there's no frontend/dist next
+ * to the test process, and serve-static logs a (harmless but noisy) warning when it's absent. */
+if (process.env.NODE_ENV !== 'test') {
+  app.use('/*', serveStatic({ root: './frontend/dist' }));
+  app.get('/*', serveStatic({ path: './frontend/dist/index.html' }));
+}
+/* v8 ignore stop */
 
 /* v8 ignore start -- process bootstrap/lifecycle, exercised by running the server, not unit tests */
 const port = Number(process.env.PORT ?? 3000);

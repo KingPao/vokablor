@@ -232,8 +232,8 @@ manual override, then confirm reading/vocabulary suggestions reflect the new lev
 - [X] T080 [P] Playwright E2E: offline mode (training works offline; speaking/conversation show a clear offline message; sync on reconnect) in `frontend/tests/e2e/offline.spec.ts`
 - [X] T081 [P] Playwright E2E: mobile-viewport responsive checks (Android/iOS sizes) in `frontend/tests/e2e/mobile-viewport.spec.ts`
 - [X] T082 [P] RSS source-catalog seed script (initial per-language feed list) in `backend/src/scripts/seed-rss-sources.ts`
-- [ ] T083 Run full coverage report and confirm ≥80% threshold across backend and frontend; close any gaps
-- [ ] T084 Run all [quickstart.md](./quickstart.md) validation scenarios end-to-end against a local `docker compose` stack
+- [X] T083 Run full coverage report and confirm ≥80% threshold across backend and frontend; close any gaps
+- [X] T084 Run all [quickstart.md](./quickstart.md) validation scenarios end-to-end against a local `docker compose` stack
 
 ---
 

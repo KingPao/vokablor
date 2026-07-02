@@ -14,14 +14,31 @@ end-to-end. See [data-model.md](./data-model.md) for entity fields and
 
 ## Setup
 
+Two ways to run this, depending on what you're validating:
+
+**A — the real deployment shape** (single built image + MySQL + Caddy, matches production):
+
 ```bash
-docker compose up -d          # starts MySQL + reverse proxy
-npm run migrate                # applies Kysely migrations (data-model.md tables)
-npm run dev                    # starts backend + Vite dev server behind the proxy
+cd docker && docker compose up --build -d     # builds and starts app + mysql + proxy
+docker compose exec app node backend/dist/migrations/run.js up   # applies migrations once
 ```
 
-Open `https://localhost` (accept the local dev cert) — the manifest and service worker only
-activate over HTTPS.
+Open `https://localhost` (accept the local self-signed cert) — this serves the actual built
+frontend and API through Caddy, exactly as production would.
+
+**B — local dev loop** (fast rebuilds, no image build):
+
+```bash
+docker run -d --name vokablor-dev-mysql -e MYSQL_ROOT_PASSWORD=... \
+  -e MYSQL_DATABASE=vokablor -e MYSQL_USER=vokablor -e MYSQL_PASSWORD=... \
+  -p 3306:3306 mysql:8.4                       # a plain MySQL container, no Caddy/app image
+npm run migrate --workspace backend            # applies Kysely migrations via tsx against it
+npm run dev                                     # backend (tsx watch) + Vite dev server, proxied
+```
+
+Open `http://localhost:5173` — plain HTTP is fine here since `localhost` is a secure context
+for service workers; set `COOKIE_SECURE=false` in `.env` for this path (see
+`middleware/session.ts`) since Path A's `Secure` cookie attribute isn't sent over HTTP.
 
 ## Scenario 1 — Vocabulary list & training (User Story 1, P1)
 

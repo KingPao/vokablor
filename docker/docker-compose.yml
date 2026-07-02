@@ -14,11 +14,11 @@ services:
 
   mysql:
     image: mysql:8.4
-    environment:
-      MYSQL_DATABASE: ${MYSQL_DATABASE:-vokablor}
-      MYSQL_USER: ${MYSQL_USER:-vokablor}
-      MYSQL_PASSWORD: ${MYSQL_PASSWORD}
-      MYSQL_ROOT_PASSWORD: ${MYSQL_ROOT_PASSWORD}
+    # `env_file` injects these into the container's own process environment directly — unlike
+    # `${VAR}` interpolation in this file, it doesn't depend on where `docker compose` is
+    # invoked from or a second `.env` living next to this compose file.
+    env_file:
+      - ../.env
     volumes:
       - mysql-data:/var/lib/mysql
     healthcheck:
