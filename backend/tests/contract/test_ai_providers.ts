@@ -35,6 +35,16 @@ describe('AI provider config contract', () => {
     expect(JSON.stringify(body)).not.toContain('sk-secret-value');
   });
 
+  it('rejects a request missing provider or model', async () => {
+    const { cookie } = await registerAndLogin();
+    const res = await app.request('/api/ai-providers', {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json', Cookie: cookie },
+      body: JSON.stringify({ provider: 'openai' }),
+    });
+    expect(res.status).toBe(400);
+  });
+
   it('rejects a non-free provider without an API key', async () => {
     const { cookie } = await registerAndLogin();
     const res = await app.request('/api/ai-providers', {

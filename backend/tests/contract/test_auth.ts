@@ -18,6 +18,42 @@ describe('auth contract', () => {
     expect(body.learnerId).toBeTypeOf('string');
   });
 
+  it('rejects registration with a missing password', async () => {
+    const res = await app.request('/api/auth/register', {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify({ email: 'nopassword@example.com' }),
+    });
+    expect(res.status).toBe(400);
+  });
+
+  it('rejects registration with an invalid email format', async () => {
+    const res = await app.request('/api/auth/register', {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify({ email: 'not-an-email', password: 'correct-horse-battery' }),
+    });
+    expect(res.status).toBe(400);
+  });
+
+  it('rejects registration with a too-short password', async () => {
+    const res = await app.request('/api/auth/register', {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify({ email: 'shortpass@example.com', password: 'short' }),
+    });
+    expect(res.status).toBe(400);
+  });
+
+  it('rejects login with a missing password', async () => {
+    const res = await app.request('/api/auth/login', {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify({ email: 'someone@example.com' }),
+    });
+    expect(res.status).toBe(400);
+  });
+
   it('rejects registering the same email twice', async () => {
     const payload = { email: 'dupe@example.com', password: 'correct-horse-battery' };
     await app.request('/api/auth/register', {

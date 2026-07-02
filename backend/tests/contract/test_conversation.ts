@@ -102,4 +102,27 @@ describe('conversation contract', () => {
     const res = await app.request(`/api/conversation/sessions/${sessionId}/end`, { method: 'POST', headers: { Cookie: cookie } });
     expect(res.status).toBe(204);
   });
+
+  it('rejects a turn with empty content', async () => {
+    const { cookie } = await registerAndLogin();
+    const { sessionId } = await json<ConversationSession>(
+      app.request('/api/languages/fr/conversation/session', { method: 'POST', headers: { Cookie: cookie } }),
+    );
+    const res = await app.request(`/api/conversation/sessions/${sessionId}/turns`, {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json', Cookie: cookie },
+      body: JSON.stringify({ content: '   ' }),
+    });
+    expect(res.status).toBe(400);
+  });
+
+  it('404s when posting a turn to a session that does not exist', async () => {
+    const { cookie } = await registerAndLogin();
+    const res = await app.request('/api/conversation/sessions/nonexistent/turns', {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json', Cookie: cookie },
+      body: JSON.stringify({ content: 'Salut' }),
+    });
+    expect(res.status).toBe(404);
+  });
 });

@@ -60,4 +60,14 @@ describe('training contract', () => {
     });
     expect(res.status).toBe(404);
   });
+
+  it('rejects an answer missing vocabularyItemId or correct', async () => {
+    const { cookie } = await registerAndLogin();
+    const res = await app.request('/api/training/sessions/whatever/answers', {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json', Cookie: cookie },
+      body: JSON.stringify({ vocabularyItemId: 'x' }),
+    });
+    expect(res.status).toBe(400);
+  });
 });

@@ -57,4 +57,24 @@ describe('offline sync contract', () => {
     });
     expect(res.status).toBe(400);
   });
+
+  it('rejects a request missing idempotencyKey or type', async () => {
+    const { cookie } = await registerAndLogin();
+    const res = await app.request('/api/sync/actions', {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json', Cookie: cookie },
+      body: JSON.stringify({ payload: {} }),
+    });
+    expect(res.status).toBe(400);
+  });
+
+  it('rejects a malformed training-answer payload', async () => {
+    const { cookie } = await registerAndLogin();
+    const res = await app.request('/api/sync/actions', {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json', Cookie: cookie },
+      body: JSON.stringify({ idempotencyKey: 'k3', type: 'training-answer', payload: { missing: 'fields' } }),
+    });
+    expect(res.status).toBe(400);
+  });
 });

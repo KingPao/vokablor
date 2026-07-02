@@ -107,4 +107,16 @@ describe('speaking contract', () => {
     });
     expect(res.status).toBe(404);
   });
+
+  it('rejects an attempt missing the audio file', async () => {
+    const { cookie } = await registerAndLogin();
+    const form = new FormData();
+    form.append('vocabularyItemId', 'whatever');
+    const res = await app.request('/api/speaking/sessions/whatever/attempts', {
+      method: 'POST',
+      headers: { Cookie: cookie },
+      body: form,
+    });
+    expect(res.status).toBe(400);
+  });
 });

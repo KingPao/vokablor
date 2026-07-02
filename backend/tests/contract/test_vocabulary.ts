@@ -112,6 +112,36 @@ describe('vocabulary contract', () => {
     expect((await json<VocabularyItem>(res)).origin).toBe('app_discovered');
   });
 
+  it('rejects adding a word missing term or translation', async () => {
+    const { cookie } = await registerAndLogin();
+    const res = await app.request('/api/languages/fr/vocabulary', {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json', Cookie: cookie },
+      body: JSON.stringify({ term: 'chat' }),
+    });
+    expect(res.status).toBe(400);
+  });
+
+  it('rejects adopting a candidate missing term or translation', async () => {
+    const { cookie } = await registerAndLogin();
+    const res = await app.request('/api/languages/fr/vocabulary/adopt', {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json', Cookie: cookie },
+      body: JSON.stringify({ term: 'chat' }),
+    });
+    expect(res.status).toBe(400);
+  });
+
+  it('404s when editing a vocabulary item that does not exist', async () => {
+    const { cookie } = await registerAndLogin();
+    const res = await app.request('/api/vocabulary/nonexistent', {
+      method: 'PATCH',
+      headers: { 'Content-Type': 'application/json', Cookie: cookie },
+      body: JSON.stringify({ translation: 'x' }),
+    });
+    expect(res.status).toBe(404);
+  });
+
   it('rejects unauthenticated requests', async () => {
     const res = await app.request('/api/languages/fr/vocabulary');
     expect(res.status).toBe(401);

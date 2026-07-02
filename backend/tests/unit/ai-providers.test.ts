@@ -206,6 +206,35 @@ describe('GoogleProvider', () => {
     expect(result).toBe('bonjour');
   });
 
+  it('converseTurn parses structured JSON', async () => {
+    fetchMock.mockResolvedValue(
+      jsonResponse({
+        candidates: [
+          {
+            content: {
+              parts: [{ text: JSON.stringify({ reply: 'Salut', flaggedNewVocabulary: ['salut'], correctionDetail: null }) }],
+            },
+          },
+        ],
+      }),
+    );
+    const provider = new GoogleProvider('key', 'gemini-1.5-flash');
+    const result = await provider.converseTurn({
+      history: [{ speaker: 'learner', content: 'bonjour' }],
+      learnerMessage: 'ça va',
+      knownVocabulary: ['bonjour'],
+      context: CONTEXT,
+    });
+    expect(result).toEqual({ reply: 'Salut', flaggedNewVocabulary: ['salut'], correctionDetail: null });
+  });
+
+  it('converseTurn falls back to the raw reply when the model breaks the JSON contract', async () => {
+    fetchMock.mockResolvedValue(jsonResponse({ candidates: [{ content: { parts: [{ text: 'not json' }] } }] }));
+    const provider = new GoogleProvider('key', 'gemini-1.5-flash');
+    const result = await provider.converseTurn({ history: [], learnerMessage: 'bonjour', knownVocabulary: [], context: CONTEXT });
+    expect(result).toEqual({ reply: 'not json', flaggedNewVocabulary: [], correctionDetail: null });
+  });
+
   it('evaluateSpeech sends inline audio data and parses the structured judgment', async () => {
     fetchMock.mockResolvedValue(
       jsonResponse({

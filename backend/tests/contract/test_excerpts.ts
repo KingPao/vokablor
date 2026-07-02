@@ -76,4 +76,10 @@ describe('excerpts contract', () => {
     const res = await app.request(`/api/vocabulary/${word.id}/excerpts`, { headers: { Cookie: otherCookie } });
     expect(res.status).toBe(404);
   });
+
+  it('404s for a vocabulary item id that does not exist at all', async () => {
+    const { cookie } = await registerAndLogin();
+    const res = await app.request('/api/vocabulary/nonexistent/excerpts', { headers: { Cookie: cookie } });
+    expect(res.status).toBe(404);
+  });
 });
