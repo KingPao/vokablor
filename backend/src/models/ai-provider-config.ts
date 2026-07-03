@@ -55,6 +55,18 @@ export async function create(
   return created;
 }
 
+/** Used to apply an already-configured provider to a newly-created LearnerLanguage (FR-016). */
+export async function findMostRecent(learnerId: string): Promise<AIProviderConfig | null> {
+  const row = await db
+    .selectFrom('ai_provider_configs')
+    .selectAll()
+    .where('learner_id', '=', learnerId)
+    .orderBy('created_at', 'desc')
+    .limit(1)
+    .executeTakeFirst();
+  return row ? toConfig(row) : null;
+}
+
 export async function remove(id: string, learnerId: string): Promise<void> {
   await db
     .deleteFrom('ai_provider_configs')

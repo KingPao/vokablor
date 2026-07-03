@@ -3,6 +3,7 @@ import type { AIProviderConfig } from '../models/ai-provider-config.js';
 import type { AIProviderName } from '../db/schema.js';
 import { encryptApiKey, decryptApiKey } from './crypto.js';
 import { resolveProvider, type AIProvider } from './ai-providers/index.js';
+import { setAiProviderForAllLanguages } from '../models/learner-language.js';
 
 export class AIProviderConfigError extends Error {}
 
@@ -34,6 +35,9 @@ export async function createConfig(
   }
   const encrypted = apiKey ? encryptApiKey(apiKey) : null;
   const config = await aiProviderConfigModel.create(learnerId, provider, model, encrypted);
+  // Adding a provider means "use this for me now" — apply it across every language the
+  // learner is already studying (see setAiProviderForAllLanguages for the rationale).
+  await setAiProviderForAllLanguages(learnerId, config.id);
   return toSummary(config);
 }
 

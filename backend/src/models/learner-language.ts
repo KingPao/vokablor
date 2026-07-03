@@ -2,6 +2,7 @@ import { randomUUID } from 'node:crypto';
 import { db } from '../db/client.js';
 import type { ProficiencyLevel } from '../db/schema.js';
 import { ensureProgressState } from './progress-state.js';
+import { findMostRecent as findMostRecentAiProviderConfig } from './ai-provider-config.js';
 
 export interface LearnerLanguage {
   id: string;
@@ -62,10 +63,16 @@ export async function listLearnerLanguages(learnerId: string): Promise<LearnerLa
  * constraint on (learner_id, language_code).
  */
 export async function ensureLearnerLanguage(learnerId: string, languageCode: string): Promise<LearnerLanguage> {
-  const id = randomUUID();
+  // Best-effort only (not part of the race-safety guarantee below): if this learner already
+  // has an AI provider configured, a brand-new language should start using it too, rather
+  // than silently defaulting to the shared provider until they notice and fix it (FR-016).
+  const existing = await findLearnerLanguage(learnerId, languageCode);
+  const aiProviderId = existing ? undefined : (await findMostRecentAiProviderConfig(learnerId))?.id ?? null;
+
+  const id = existing?.id ?? randomUUID();
   await db
     .insertInto('learner_languages')
-    .values({ id, learner_id: learnerId, language_code: languageCode })
+    .values({ id, learner_id: learnerId, language_code: languageCode, ...(aiProviderId !== undefined ? { ai_provider_id: aiProviderId } : {}) })
     .onDuplicateKeyUpdate({ learner_id: learnerId })
     .execute();
 
@@ -80,5 +87,18 @@ export async function updateLevel(id: string, level: ProficiencyLevel): Promise<
     .updateTable('learner_languages')
     .set({ current_level: level, level_updated_at: new Date() })
     .where('id', '=', id)
+    .execute();
+}
+
+/**
+ * FR-016: applies a learner's configured AI provider across every language they're
+ * studying — "I added my own key" means "use it everywhere for me", not a per-language
+ * setting the learner has no UI to manage separately.
+ */
+export async function setAiProviderForAllLanguages(learnerId: string, aiProviderConfigId: string | null): Promise<void> {
+  await db
+    .updateTable('learner_languages')
+    .set({ ai_provider_id: aiProviderConfigId })
+    .where('learner_id', '=', learnerId)
     .execute();
 }
