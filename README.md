@@ -87,6 +87,14 @@ correction, and conversation practice. Pick one:
   `NVIDIA_FREE_API_KEY` in `.env`. Every learner on this deployment shares this key with a
   per-learner daily request cap (`NVIDIA_FREE_RATE_LIMIT_PER_DAY`, default 50) — fine for
   trying the app out or a small self-hosted instance.
+  - Browse [NVIDIA's model catalog](https://build.nvidia.com/models) to see what's currently
+    free to call with a key — the lineup changes over time, so pick whatever's listed there
+    rather than trusting a specific name to still exist. Instruction-tuned chat models are
+    what you want (the app uses this for text generation, not image/audio models). Open a
+    model's page and copy the exact model ID shown in its API code sample into
+    `NVIDIA_FREE_MODEL` in `.env` — the default, `meta/llama-3.1-8b-instruct`, is a reasonable
+    starting point if it's still listed, but double-check on the catalog page rather than
+    assuming.
 - **Your own key (no shared quota)**: get a key from
   [OpenAI](https://platform.openai.com/api-keys),
   [Anthropic](https://console.anthropic.com/settings/keys), or
