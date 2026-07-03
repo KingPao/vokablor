@@ -9,6 +9,7 @@ node_modules/
 .env.*
 !.env.example
 docker/
+!docker/entrypoint.sh
 specs/
 .specify/
 .claude/

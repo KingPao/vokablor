@@ -23,5 +23,7 @@ COPY backend/package.json backend/package.json
 RUN npm ci --omit=dev --workspace backend
 COPY --from=build /app/backend/dist backend/dist
 COPY --from=build /app/frontend/dist frontend/dist
+COPY docker/entrypoint.sh entrypoint.sh
+RUN chmod +x entrypoint.sh
 EXPOSE 3000
-CMD ["node", "backend/dist/api/app.js"]
+CMD ["./entrypoint.sh"]

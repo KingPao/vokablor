@@ -107,13 +107,15 @@ You can skip this step entirely and come back to it later — everything except 
 suggestions, speaking correction, and conversation practice works fine without any key
 (adding words manually, training, and reading real-world excerpts don't need AI at all).
 
-**4. Start the stack and apply migrations**
+**4. Start the stack**
 
 ```bash
 cd docker
 docker compose up --build -d
-docker compose exec app node backend/dist/migrations/run.js up
 ```
+
+The app container applies any pending database migrations automatically on every start
+(before it starts serving) — no separate migration command needed here.
 
 **5. Open the app**
 

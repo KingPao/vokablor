@@ -20,8 +20,10 @@ Two ways to run this, depending on what you're validating:
 
 ```bash
 cd docker && docker compose up --build -d     # builds and starts app + mysql + proxy
-docker compose exec app node backend/dist/migrations/run.js up   # applies migrations once
 ```
+
+The app container's entrypoint (`docker/entrypoint.sh`) applies any pending migrations
+automatically before starting the server, on every start — no separate migration command.
 
 Open `https://localhost` (accept the local self-signed cert) — this serves the actual built
 frontend and API through Caddy, exactly as production would.
